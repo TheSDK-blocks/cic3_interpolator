@@ -17,9 +17,9 @@ class cic3_interpolator(verilog,thesdk):
         self.Rs_low  = 4*20e6;          # sampling frequency
         self.derivscale = 1023
         self.derivshift = 0
-        self.iptr_A = refptr();
+        self.iptr_A = IO();
         self.model='py';             #can be set externally, but is not propagated
-        self._Z = refptr();
+        self._Z = IO();
         if len(arg)>=1:
             parent=arg[0]
             self.copy_propval(parent,self.proplist)
@@ -53,7 +53,7 @@ class cic3_interpolator(verilog,thesdk):
         # Took me too long to figure this out. Feel stupid. Do not repeat. 
         s1=reduce(lambda signal, func: func(signal), 
                     [ lambda s: np.diff(s,axis=0).reshape(-1,1) for i in range(3) ], 
-                     np.r_['0,2', 0, 0, 0, self.iptr_A.Value.reshape(-1,1)]).reshape(-1,1)*self.derivscale*2**self.derivshift
+                     np.r_['0,2', 0, 0, 0, self.iptr_A.Data.reshape(-1,1)]).reshape(-1,1)*self.derivscale*2**self.derivshift
         interpolated=np.zeros((ratio*s1.shape[0],1),dtype=complex)
         for i in range(ratio):
             interpolated[i::ratio,0]=s1.reshape(-1,1)[:,0]
@@ -64,7 +64,7 @@ class cic3_interpolator(verilog,thesdk):
                     , interpolated.reshape(-1,1) ).reshape(-1,1)
         if self.par:
             queue.put(out)
-        self._Z.Value=out
+        self._Z.Data=out
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt
